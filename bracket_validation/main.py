@@ -1,36 +1,49 @@
-class Element:
-    def __init__(self, color, tipo):
-        self.color = color
-        self.tipo = tipo
+"""
+Stack implementation
+
+"""
+from enum import Enum, auto
+
+
+class TypeOptions(Enum):
+    OPEN = auto()
+    CLOSE = auto()
 
 
 class Classifier:
-    ...
+    @staticmethod
+    def classify(element):
+        current_options = {
+            "{": ("r_brackets", TypeOptions.OPEN),
+            "[": ("s_brackets", TypeOptions.OPEN),
+            "(": ("parenthesis", TypeOptions.OPEN),
+            "}": ("r_brackets", TypeOptions.CLOSE),
+            "]": ("s_brackets", TypeOptions.CLOSE),
+            ")": ("parenthesis", TypeOptions.CLOSE)
+        }
+        return Element(*current_options.get(element))
 
 
-class StackController:
-    ...
-
-
-class StackValidator:
-    ...
+class Element:
+    def __init__(self, name, type):
+        self.type = type
+        self.name = name
 
 
 def orchestrator(test_case):
-    classifier = Classifier()
-    stack_controller = StackController()
-    stack_validator = StackValidator()
     stack = []
-    is_valid = True
-    for e in test_case:
-        element = classifier.classify(e)
-        stack_controller.add(element, stack)
-        is_valid = stack_validator.check(stack)
-        if not is_valid:
-            break
-    if is_valid:
-        is_valid = stack_validator.check(stack)
-    return is_valid
+    classifier = Classifier()
+    for element in test_case:
+        element = classifier.classify(element)
+        if element.type == TypeOptions.OPEN:
+            stack.append(element)
+        if element.type == TypeOptions.CLOSE:
+            last_element = stack.pop()
+            if last_element.name != element.name:
+                return False
+    if len(stack) != 0:
+        return False
+    return True
 
 
 if __name__ == "__main__":
